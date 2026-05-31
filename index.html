@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KOH Lending — Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="data.js"></script>
+<style>
+:root {
+  --bg: #0c0e13;
+  --s1: #12151d;
+  --s2: #191d28;
+  --border: rgba(255,255,255,0.07);
+  --gold: #f5a623;
+  --green: #3ecf8e;
+  --red: #f55353;
+  --orange: #ff914d;
+  --blue: #4e9fff;
+  --text: #e2e4ec;
+  --dim: rgba(226,228,236,0.4);
+  --mono: 'DM Mono', monospace;
+  --thai: 'Sarabun', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--thai); min-height:100vh; }
+
+/* TOP BAR */
+.topbar {
+  background:var(--s1);
+  border-bottom:1px solid var(--border);
+  padding:14px 24px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  position:sticky; top:0; z-index:100;
+}
+.logo { font-family:var(--mono); font-size:13px; color:var(--gold); letter-spacing:0.1em; }
+.updated { font-family:var(--mono); font-size:10px; color:var(--dim); }
+
+/* KPI */
+.kpi-bar {
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:1px;
+  background:var(--border);
+  margin-bottom:1px;
+}
+.kpi {
+  background:var(--s1);
+  padding:20px 20px;
+}
+.kpi-label { font-family:var(--mono); font-size:9px; letter-spacing:0.2em; color:var(--dim); text-transform:uppercase; margin-bottom:8px; }
+.kpi-val { font-size:28px; font-weight:700; line-height:1; }
+.kpi-sub { font-family:var(--mono); font-size:10px; color:var(--dim); margin-top:5px; }
+.kv-gold { color:var(--gold); }
+.kv-green { color:var(--green); }
+.kv-red { color:var(--red); }
+.kv-orange { color:var(--orange); }
+
+/* FILTER BAR */
+.filter-bar {
+  background:var(--s1);
+  border-bottom:1px solid var(--border);
+  padding:10px 24px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.filter-btn {
+  font-family:var(--mono);
+  font-size:10px;
+  letter-spacing:0.1em;
+  padding:5px 12px;
+  border:1px solid var(--border);
+  background:transparent;
+  color:var(--dim);
+  cursor:pointer;
+  transition:all 0.15s;
+  text-transform:uppercase;
+}
+.filter-btn:hover, .filter-btn.active {
+  border-color:var(--gold);
+  color:var(--gold);
+  background:rgba(245,166,35,0.08);
+}
+
+/* CASE LIST */
+.case-list { padding:1px; display:flex; flex-direction:column; gap:1px; }
+
+.case-row {
+  background:var(--s1);
+  display:grid;
+  grid-template-columns:64px 1fr 140px 120px 160px;
+  align-items:center;
+  transition:background 0.15s;
+  cursor:default;
+  border-left:3px solid transparent;
+}
+.case-row:hover { background:var(--s2); }
+.case-row.hold { border-left-color:var(--red); }
+.case-row.reconcile-flag { border-left-color:var(--orange); }
+
+.col-num {
+  display:flex; align-items:center; justify-content:center;
+  font-family:var(--mono); font-size:18px; color:var(--dim);
+  height:70px; border-right:1px solid var(--border);
+}
+
+.col-main { padding:14px 16px; }
+.case-id { font-family:var(--mono); font-size:9px; color:var(--dim); letter-spacing:0.15em; }
+.case-vehicle { font-size:14px; font-weight:600; margin-top:3px; }
+.case-plate { font-family:var(--mono); font-size:10px; color:var(--dim); margin-top:2px; }
+
+.col-customer { padding:14px 12px; }
+.cust-name { font-size:13px; font-weight:500; }
+.cust-date { font-family:var(--mono); font-size:10px; color:var(--dim); margin-top:3px; }
+
+.col-amount { padding:14px 12px; }
+.amt-val { font-size:20px; font-weight:700; color:var(--text); }
+.amt-cycle { font-family:var(--mono); font-size:10px; color:var(--dim); margin-top:3px; }
+
+.col-status {
+  padding:14px 14px;
+  border-left:1px solid var(--border);
+  display:flex; flex-direction:column; gap:6px; align-items:flex-start;
+}
+.badge {
+  font-family:var(--mono); font-size:9px; letter-spacing:0.1em;
+  padding:3px 9px; text-transform:uppercase;
+}
+.b-wait { background:rgba(245,166,35,0.12); color:var(--gold); border:1px solid rgba(245,166,35,0.25); }
+.b-missing { background:rgba(245,83,83,0.12); color:var(--red); border:1px solid rgba(245,83,83,0.25); }
+.b-reconcile { background:rgba(255,145,77,0.12); color:var(--orange); border:1px solid rgba(255,145,77,0.25); }
+.b-check { background:rgba(78,159,255,0.12); color:var(--blue); border:1px solid rgba(78,159,255,0.25); }
+.b-ok { background:rgba(62,207,142,0.12); color:var(--green); border:1px solid rgba(62,207,142,0.25); }
+
+.status-note { font-size:11px; color:var(--dim); line-height:1.4; }
+
+/* CAR-011 detail row */
+.detail-row {
+  background:rgba(245,166,35,0.04);
+  border-left:3px solid rgba(245,166,35,0.3);
+  padding:12px 64px 12px 80px;
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:12px;
+  border-top:1px solid var(--border);
+}
+.dr-item { }
+.dr-label { font-family:var(--mono); font-size:9px; color:var(--dim); letter-spacing:0.1em; margin-bottom:4px; }
+.dr-val { font-size:15px; font-weight:600; color:var(--gold); }
+
+/* PROGRESS BAR */
+.progress-section {
+  background:var(--s1);
+  padding:16px 24px;
+  margin-bottom:1px;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:24px;
+}
+.prog-item {}
+.prog-header { display:flex; justify-content:space-between; margin-bottom:8px; }
+.prog-label { font-family:var(--mono); font-size:9px; color:var(--dim); letter-spacing:0.15em; text-transform:uppercase; }
+.prog-pct { font-family:var(--mono); font-size:12px; }
+.prog-track { height:4px; background:rgba(255,255,255,0.06); }
+.prog-fill { height:100%; transition:width 1s ease; }
+
+/* FOOTER */
+.footer {
+  padding:20px 24px;
+  border-top:1px solid var(--border);
+  display:flex;
+  justify-content:space-between;
+  font-family:var(--mono);
+  font-size:10px;
+  color:var(--dim);
+}
+
+@media(max-width:640px){
+  .kpi-bar { grid-template-columns:repeat(2,1fr); }
+  .case-row { grid-template-columns:40px 1fr 100px; }
+  .col-customer, .col-status { display:none; }
+  .detail-row { grid-template-columns:repeat(2,1fr); padding-left:16px; }
+  .progress-section { grid-template-columns:1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="logo">KOH · AUTO-BACKED LENDING</div>
+  <div class="updated" id="updated-date"></div>
+</div>
+
+<div class="kpi-bar" id="kpi-bar"></div>
+
+<div class="progress-section">
+  <div class="prog-item">
+    <div class="prog-header">
+      <div class="prog-label">LINE Confirmation Coverage</div>
+      <div class="prog-pct kv-gold" id="pct-line"></div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="bar-line" style="background:var(--gold)"></div></div>
+  </div>
+  <div class="prog-item">
+    <div class="prog-header">
+      <div class="prog-label">Document Status</div>
+      <div class="prog-pct kv-red" id="pct-doc"></div>
+    </div>
+    <div class="prog-track"><div class="prog-fill" id="bar-doc" style="background:var(--red)"></div></div>
+  </div>
+</div>
+
+<div class="filter-bar">
+  <button class="filter-btn active" onclick="filterCases('all',this)">ทั้งหมด</button>
+  <button class="filter-btn" onclick="filterCases('wait',this)">รอหลักฐาน</button>
+  <button class="filter-btn" onclick="filterCases('missing',this)">ขาดหลักฐาน</button>
+  <button class="filter-btn" onclick="filterCases('reconcile',this)">รอ reconcile</button>
+  <button class="filter-btn" onclick="filterCases('check',this)">รอตรวจ</button>
+</div>
+
+<div class="case-list" id="case-list"></div>
+
+<div class="footer">
+  <span>KOH AUTO-BACKED LENDING · OPERATOR VIEW · INTERNAL ONLY</span>
+  <span id="footer-count"></span>
+</div>
+
+<script>
+const DOC_LABELS = {
+  wait: { label:"รอหลักฐาน", cls:"b-wait" },
+  missing: { label:"ขาดหลักฐาน", cls:"b-missing" },
+  reconcile: { label:"รอ reconcile", cls:"b-reconcile" },
+  check: { label:"รอตรวจ", cls:"b-check" },
+  ok: { label:"ครบแล้ว", cls:"b-ok" }
+};
+
+function fmt(n){ return n.toLocaleString('th-TH'); }
+
+function renderKPI(){
+  const p = PORTFOLIO;
+  const gap = p.total_amount - p.line_confirmed;
+  const missing = p.cases.filter(c=>c.doc==='missing').length;
+  document.getElementById('updated-date').textContent = 'อัพเดท ' + p.updated;
+  document.getElementById('kpi-bar').innerHTML = `
+    <div class="kpi"><div class="kpi-label">ยอดรวมสัญญา</div><div class="kpi-val kv-gold">${fmt(p.total_amount)}</div><div class="kpi-sub">บาท · ${p.total_cases} เคส</div></div>
+    <div class="kpi"><div class="kpi-label">LINE Confirmed</div><div class="kpi-val kv-green">${fmt(p.line_confirmed)}</div><div class="kpi-sub">บาท · ยืนยันแล้ว</div></div>
+    <div class="kpi"><div class="kpi-label">Gap ยังไม่ reconcile</div><div class="kpi-val kv-red">${fmt(gap)}</div><div class="kpi-sub">บาท · ต้องตาม</div></div>
+    <div class="kpi"><div class="kpi-label">ขาดหลักฐาน</div><div class="kpi-val kv-orange">${missing}</div><div class="kpi-sub">เคส จาก ${p.total_cases}</div></div>
+  `;
+  // progress bars
+  const linePct = Math.round(p.line_confirmed/p.total_amount*100);
+  const okCases = p.cases.filter(c=>c.doc==='ok').length;
+  const docPct = Math.round(okCases/p.total_cases*100);
+  document.getElementById('pct-line').textContent = linePct+'%';
+  document.getElementById('bar-line').style.width = linePct+'%';
+  document.getElementById('pct-doc').textContent = docPct+'%';
+  document.getElementById('bar-doc').style.width = (docPct||2)+'%';
+  document.getElementById('footer-count').textContent = p.total_cases+' CASES · '+fmt(p.total_amount)+' บาท';
+}
+
+function renderCases(filter='all'){
+  const list = document.getElementById('case-list');
+  list.innerHTML = '';
+  const cases = filter==='all' ? PORTFOLIO.cases : PORTFOLIO.cases.filter(c=>c.doc===filter);
+  cases.forEach((c,i)=>{
+    const ds = DOC_LABELS[c.doc] || DOC_LABELS.wait;
+    const holdClass = c.hold ? 'hold' : (c.doc==='reconcile'?'reconcile-flag':'');
+    const icon = c.type==='car' ? '🚗' : '🏍';
+    const row = document.createElement('div');
+    row.className = 'case-row '+holdClass;
+    row.dataset.doc = c.doc;
+    row.innerHTML = `
+      <div class="col-num">${i+1}</div>
+      <div class="col-main">
+        <div class="case-id">${c.id} · ${c.date}</div>
+        <div class="case-vehicle">${icon} ${c.vehicle} ${c.color}</div>
+        <div class="case-plate">${c.plate}</div>
+      </div>
+      <div class="col-customer">
+        <div class="cust-name">${c.customer}</div>
+        <div class="cust-date">รอบดอก ${c.cycle}</div>
+      </div>
+      <div class="col-amount">
+        <div class="amt-val">${fmt(c.amount)}</div>
+        <div class="amt-cycle">บาท</div>
+      </div>
+      <div class="col-status">
+        <span class="badge ${ds.cls}">${ds.label}</span>
+        <div class="status-note">${c.note}</div>
+      </div>
+    `;
+    list.appendChild(row);
+
+    // CAR-011 detail
+    if(c.id==='CAR-011'){
+      const detail = document.createElement('div');
+      detail.className = 'detail-row';
+      detail.innerHTML = `
+        <div class="dr-item"><div class="dr-label">วงเงินสัญญา</div><div class="dr-val">${fmt(c.amount)}</div></div>
+        <div class="dr-item"><div class="dr-label">ดอกเบี้ย</div><div class="dr-val">${fmt(c.interest)}</div></div>
+        <div class="dr-item"><div class="dr-label">ค่าจอด</div><div class="dr-val">${fmt(c.parking)}</div></div>
+        <div class="dr-item"><div class="dr-label">โอน K+</div><div class="dr-val">${fmt(c.transfer)}</div></div>
+        <div class="dr-item"><div class="dr-label">เงินสดหน้างาน</div><div class="dr-val">${fmt(c.cash)}</div></div>
+      `;
+      list.appendChild(detail);
+    }
+  });
+}
+
+function filterCases(type, btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderCases(type);
+}
+
+renderKPI();
+renderCases();
+</script>
+</body>
+</html>
